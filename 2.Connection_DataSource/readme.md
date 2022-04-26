@@ -43,3 +43,29 @@
 - 커넥션 풀은 개념적으로 단순해서 직접 구현할 수 있지만 오픈소스의 성능이 훨 좋으므로 오픈소스를 쓰자.
 - commons-dbcp2, tomcat-jdbc pool, HikariCP 등이 있는데, HikariCP가 편리함, 안정성 측면에서 검증되었기에 HikariCp를 사용하자.
 
+## 2. DataSource의 이해
+
+참고로 기존에 DriverManager를 사용하고 있다가 커넥션풀로 바꾸려면 로직 자체를 수정해야한다.
+
+만약 HikariCP를 사용한다면 의존관계가 DriverManager에서 HikariCP로 바뀌기 때문이다.
+
+물론 사용법의 차이도 있을 것이다.
+
+자바는 이러한 문제를 해결하기 위해 *java.sql.DataSource*라는 인터페이스를 제공한다.
+
+DataSource는 커넥션을 획득하는 방법을 추상화 하는 인터페이스다.
+
+```java
+public interface DataSource{
+    Connetion getConnection() throws SQLException;
+}
+```
+
+뭐 대충 이런식이다.
+
+### 정리
+
+- 대부분의 커넥션 풀은 DataSource를 구현해두었으므로 커넥션풀의 코드에 의존하는 것이 아닌, DataSource의 인터페이스에 의존하도록 설계하면 된다.
+- 커넥션 풀의 구현 기술을 바꾸고 싶을땐 해당 구현체로 갈아끼우면 된다.
+- DriverManager는 DataSource 인터페이스를 사용하지 않으므로 코드 수정을 직접 해줘야한다. 
+  - 스프링은 DriverManager도 DataSource를 사용할 수 있도록 DriverManagerDataSource라는 클래스를 제공
